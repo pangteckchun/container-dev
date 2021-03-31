@@ -25,4 +25,18 @@ The real physical separation, together with read-only and read-write access mode
 ---
 
 ### Virtualization 101 ###
-1. 
+1. Operating system-level virtualization is a kernel's capability to allow creation and existence of multiple isolated environments, such as containers, on the same hosts, without a need to install a guest OS (unlike a full VM)
+
+1. These containers or virtalizaed environments are limited by the kernel to its assigned devices. This separation allows programs to run in ther own assigned virual environment for better security and resource management.
+
+1. It leverages a `CoW` mechanism type of stacked storage management model, shared by all containers.
+
+1. Mechanisms implementing OS level virtualization are `chroot` (one of the oldest), `LXC` (Linux Containers), `Systemd-nspwan`
+
+1. `chroot` - changing the root directory of a process and its children, to a virtual root, giving the impression the process has the real root directory of he OS, without the possibiliy of escaping to access the real root directory.
+
+1. `LXC` introduced in 2008 on Linux systems. Leverages cgroups and chroot, with namespace isolation to limit resources and isolate from host OS.
+
+1. `Systemd-nspawn` introdued in 2010 in Linux systems. Fully virtualize process tree, fiesystem, users, host and domain name. Processes cannot communicate aceoss containers. May run system services managed by `systemd`.
+
+---
