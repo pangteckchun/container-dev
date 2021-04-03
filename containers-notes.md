@@ -40,3 +40,46 @@ The real physical separation, together with read-only and read-write access mode
 1. `Systemd-nspawn` introdued in 2010 in Linux systems. Fully virtualize process tree, fiesystem, users, host and domain name. Processes cannot communicate aceoss containers. May run system services managed by `systemd`.
 
 ---
+
+### Container Standards & Runtimes ###
+1. Containers - allows shipping of application code along with its dependencies all packaged in a box, with a standard to "unbox" and execute it in different isolated environments. This ensures maximum portability and flexibility for quick feedback loop for code-to-deploy demands.
+
+1. Standardization amongst containers frameworks and runtimes, has been lacking. Evolved now into 2 common standards: App Container (`appc`) and Open Container Initiative (`OCI`). Gradual convergence from App Container --> Open Container Initiative.
+
+#### `appc` ####
+1. Introduced in 2014 by CoreOS, Google and Redhat.
+
+1. Defines its own Application Container Image (`ACI`) format for container images.
+
+1. `appc` aims to speed up design and deployment of containers while ensuring integrity through crypto signatures.
+
+1. Provides the following aspects to manage the container lfecycle:
+- App Container Image (`ACI`)
+- App Container Image Discovery
+- App Conainer Pod
+- App Container Executor (`ACE`)
+
+#### `OCI` ####
+1. Introduced in 2015 by Docker and other leaders.
+
+1. `OCI` provides the following aspects:
+- **Runtime Specification** -  defines how to run a container bundle that is unpacked on disk.
+- **Image Format Specification** - defines the OCI Image Format that includes a manifest, a set of filesytem layers, a config file and an optional image index.
+
+### Container Runtimes ###
+1. Fundamentals: Container runtimes are responsible to provide an environment supporting basic operations with images and the running containers, that is both configurable and consistent;  
+Regardless of the underlying infrastructure - whether an on-prem Data Center or a Cloud Infrastructure as a Service (IaaS), containers’ behavior is expected to be the same, thus allowing users to develop and test containers on any system across all tiers - from development to production.
+
+1. Different container runtimes:
+- `runc` - limited capabilities.
+- `containerd` - designed to run as en embedded daemon of a more robust container management system; not used directy by end users; used in Docker engine, Kubernetes, GKE etc; utilizes `runc`. Open-sourced by Docker
+- `Docker` - most robust but also complex. Uses `LXC` initially as its runtime but has developed and open-sourced `libcontainer` to replace `LXC`. Leverages   
+See architecture:  
+-- **Docker client** - CLI tool; runs docker commands against a Docker daemon host.  
+-- **Docker host** - `dockerd` responsible for building, running, and distributing Docker containers. A daemon can act alone, or interact with other daemons to manage distributed Docker services across multiple Docker hosts clustered together. It listens for Docker API requests from the Docker client and manages Docker objects such as images, containers, networks, and volumes.  
+-- **Docker registries** - popular public ones: Docker Hub, quay (K8S). Can be private and self hosted too.  
+-- **Latest - Docker Desktop** - all in one installer for all docker components.
+- `rkt` - developed by CoreOS; implements the `appc` specification. Interoperable with Docker Hub and docker based images. No longer maintained by Cloud Native Computing Foundation.
+- `CRI-O` - a lightweight alternative to using Docker or rkt as the runtimes for Kubernetes. The CRI-O runtime has been optimized for Kubernetes. CRI-O also supports container security. Not intended to be used by end-users too, like `containerd`.
+
+---
