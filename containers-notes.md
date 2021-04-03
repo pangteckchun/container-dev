@@ -83,3 +83,38 @@ See architecture:
 - `CRI-O` - a lightweight alternative to using Docker or rkt as the runtimes for Kubernetes. The CRI-O runtime has been optimized for Kubernetes. CRI-O also supports container security. Not intended to be used by end-users too, like `containerd`.
 
 ---
+
+### Image operations ###
+1. **Container image** - when loaded at runtime, a containr is a running instance of an image; many containers maybes started from the same image.
+
+1. Image are stored in layered using `CoW` mechanism. Base image are stored at the bottom referenced by layered images on top which would contain different features for different container runtime needed.
+
+1. Image registry - efficent and secure storage. Reusability of images.
+
+1. Container image operations alow users to manage image lifecycle from creation to registry storage, prep for running as container.  
+- Docker uses a `Dockerfile` - which contains a set of instructions for dockerd to build an image. Use `docker image build` or `docker builder build` to build an image (traditional method uses `docker build`.
+
+1. NOTE: Pulling an image from say Docker Registry, using e.g. `docker image pull` only downloads the image to the local disk (local repo). It is just a container image; NOT YET a running container. See next section on how to create a container from an image downloaded.
+
+---
+
+### Container operations ###
+1. `docker` - modern docker commands group their tradiional methods based on these 4 context: *container,image, engine, system*. E.g. `docker image pull` versus `docker pull`; the old methods will be deprecated gradually.
+
+1. Use `docker commit` to build an image from a container and its most recent configuration.
+
+1. `rkt` operates on pods rather than containers. E.g. `rkt run` run a pod from a container image.
+
+1. `podman` has very similar command syntax to docker. It is capable of managing containers, pods, container images both OCI-based and Docker-based. In addition to container image operations, Podman supports operations to manage the entire lifecycle of a container.
+
+#### `docker` container opertions ####
+1. Creating a container from an image - `docker container create -it [some image name downloaded to local repo]`; this command only creates the container but does not start it.
+
+1. Start the container using - `docker container start [partial container ID]`.
+
+1. Hostname of container by default is the container ID.
+
+1. Inspect details of container using `docker container inspect [partial container ID]`.
+
+---
+
