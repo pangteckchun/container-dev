@@ -84,7 +84,7 @@ See architecture:
 
 ---
 
-### Image operations ###
+### Image Operations ###
 1. **Container image** - when loaded at runtime, a containr is a running instance of an image; many containers maybes started from the same image.
 
 1. Image are stored in layered using `CoW` mechanism. Base image are stored at the bottom referenced by layered images on top which would contain different features for different container runtime needed.
@@ -94,11 +94,11 @@ See architecture:
 1. Container image operations alow users to manage image lifecycle from creation to registry storage, prep for running as container.  
 - Docker uses a `Dockerfile` - which contains a set of instructions for dockerd to build an image. Use `docker image build` or `docker builder build` to build an image (traditional method uses `docker build`.
 
-1. NOTE: Pulling an image from say Docker Registry, using e.g. `docker image pull` only downloads the image to the local disk (local repo). It is just a container image; NOT YET a running container. See next section on how to create a container from an image downloaded.
+5. NOTE: Pulling an image from say Docker Registry, using e.g. `docker image pull` only downloads the image to the local disk (local repo). It is just a container image; NOT YET a running container. See next section on how to create a container from an image downloaded.
 
 ---
 
-### Container operations ###
+### Container Operations ###
 1. `docker` - modern docker commands group their tradiional methods based on these 4 context: *container,image, engine, system*. E.g. `docker image pull` versus `docker pull`; the old methods will be deprecated gradually.
 
 1. Use `docker commit` to build an image from a container and its most recent configuration.
@@ -115,6 +115,30 @@ See architecture:
 1. Hostname of container by default is the container ID.
 
 1. Inspect details of container using `docker container inspect [partial container ID]`.
+
+---
+
+### Building Container Images ###
+1. 3 ways to build a container image:
+- From scratch, e.g. using a dockerfile
+- From a running container
+- Convert a container image
+
+2. Dockerfile is also supported by `buildah` and `podman`. Dockerfie is a set of instructions for the container CLI to take and build up an image.
+
+1. Creating image from a running container involves exporting the container's root filesystem into a tar fie.
+
+1. Conversion is typically from OCI to ACI container formats, which is no longer popular as the community embraces OCI standards moving forward.
+
+1. NOTE: Using GCP, even if the VM instance is suspended (to save running costs except storage costs), the image created is still persisted on VM, after resume/restart.  
+Also this applies to even running containers after suspend and restart!
+
+#### Dockerfile ####
+1. 2 types of format: Shell Form and Exec Form (prefered by users). Shell Form runs the instructions in a command line shell. While Exec Form runs directly inside the container.
+
+1.  See https://docs.docker.com/engine/reference/builder/ for details of dockerfile instructions. 2 main categories: **build time** and **run time** instructions.
+
+1. `.dockerignore` file is used to exclude files and directories during docker image build process, where the docker client zips the referenced context folder and send it to Docker Host.
 
 ---
 
