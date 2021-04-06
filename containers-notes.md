@@ -142,3 +142,47 @@ Also this applies to even running containers after suspend and restart!
 
 ---
 
+### Container Networking ###
+1. The container network enables communication between microservices running inside containers, containers running on the same host, running on different hosts, or a container and other applications and services from anywhere in the world.
+
+1. Two container networking standards: Docker Container Network Model (`CNM`) and the CoreOS Container Network Interface (`CNI`).
+
+#### `CNM` - by Docker ####
+1. Introduced by Docker and implemented by `libnetwork` project as the reference implementation.
+
+1. Specifies a network sandbox, which abstracts networking specifics through plug-in drivers and exposed as "endpoints". Endpoints provide links from containers to an external host-based networking namespace and connect to other containers through their exposed endpoints.
+![CNM concept](./img/cnm-model-container-networking.png)
+
+1. The network sandbox supports multiple endpoints, each paired with a different network, thus allowing one container to access multiple networks simultaneously.
+
+1. The `libnetwork` model uses a consistent programming interface and abstract away the underlying network connectivity -  using driver plugins. It supports drivers types for:
+- **bridge** - internal within host networking space for containers to communicate with each other on the same host but cannot communicate with external parties;
+- **overlay** - allows networking comms cross different hosts using VXLAN network encapsulation;
+- **null** - no networking is required;
+- **custom** - for 3rd party driver plugins.
+
+#### `CNI` - by CoreOS ####
+1. Adopted by projects such as Mesos, Amazon ECS, Kubernetes, Cloud Foundry, OpenShift, rkt.
+
+1. Much simplier specs, focusing on network connectivity and releassing network resources once a container is deleted.
+
+1. 3 main plugin groups for `CNI`: Main, IPAM, Meta.
+- **Main** --> focuses on creating new interfaces and supporting the drivers types for bridge, ipvlan, loopback, macvlan, ptp, vlan, host-device, win-bridge, win-overlay;
+- **IPAM** --> focuses on IP address allocation and includes plugins such as dhcp, host-local, static;
+- **Meta** --> focuses on 3rd party plugin support and includes flannel compatibility, bandwidth limitation, firewall rules etc.
+
+#### Docker networking drivers ####
+1. **Bridge** - the default network type in Docker. To isolate container network from the host network, act as DHCP server to assign IP addresses. Useful for containers that talk to each other on the same host.
+1. **Host** - trade off isolation by allowing containers to talk to host network directly. But it also eliminates the need for NAT (used in the Bridge driver case) and exposes container ports as host ports (performance improvement).
+1. **Overlay** - Spanning multiple hosts, e.g. part of a cluster. Very popular with containers orhestraton platforms.
+1. **Macvlan** - Allows a container to change its appearance on the network. For example, it allows a container to appear as a physical device with its own MAC address on the network.
+1. **None** - Disables networking of a container.
+1. **Network Plugins** - 3rd party network drivers integration into Docker.
+
+1. When a Docker container is run, it attaches itself to the default **bridge** network. If you do an inspect of the running container and look at the field for `NetworkID` you will observe the ID of the bridge network as the value.
+
+1. When Docker daemon starts, it creates a ​docker0​ network bridge on the host system. By default, all thecontainers connect to the ​docker0​ network bridge.
+
+1. Docker creates a ​veth​ pair to attach a container to abridge. One end of the ​veth​ pair is attached to the bridge while the other end to the container. The bridgeside of the veth pair is ​vethcbba2f9@if7​ while the container end of the veth pair is ​eth0​.
+
+---
