@@ -74,7 +74,7 @@ Regardless of the underlying infrastructure - whether an on-prem Data Center or 
 - `runc` - limited capabilities.
 - `containerd` - designed to run as en embedded daemon of a more robust container management system; not used directy by end users; used in Docker engine, Kubernetes, GKE etc; utilizes `runc`. Open-sourced by Docker
 - `Docker` - most robust but also complex. Uses `LXC` initially as its runtime but has developed and open-sourced `libcontainer` to replace `LXC`. Leverages   
-See architecture:  
+![Docker architecture](./img/docker-architecture.png)  
 -- **Docker client** - CLI tool; runs docker commands against a Docker daemon host.  
 -- **Docker host** - `dockerd` responsible for building, running, and distributing Docker containers. A daemon can act alone, or interact with other daemons to manage distributed Docker services across multiple Docker hosts clustered together. It listens for Docker API requests from the Docker client and manages Docker objects such as images, containers, networks, and volumes.  
 -- **Docker registries** - popular public ones: Docker Hub, quay (K8S). Can be private and self hosted too.  
@@ -186,3 +186,52 @@ Also this applies to even running containers after suspend and restart!
 1. Docker creates a ​veth​ pair to attach a container to abridge. One end of the ​veth​ pair is attached to the bridge while the other end to the container. The bridgeside of the veth pair is ​vethcbba2f9@if7​ while the container end of the veth pair is ​eth0​.
 
 ---
+
+### Container Storage ###
+![Storage options](./img/external-storage-options.png)
+There are at least 4 types of storage options for **Docker**.
+
+#### **1. Writeable layer within container** ####
+1. Docker uses UnionFS (specifically its `CoW` strategy) to overlay a base container image with storage layers, such as ephemeral storage layer, custom storage layer, and config layer at the time a new container is created.  
+![Writeable layer](./img/container-writeable-layer.png)  
+
+1. The ephemeral storage, aka **container writeable layer**, is reserved for the container’s I/O operations. 
+Each time the base container image is modified, Docker saves a copy of the image onto the writeabe layer for users to modify it. The base container image remains intact.
+
+1. The writeable layer gets deleted along with a deleted container and hence it is not recommended to be used for persistent data; instead, a **docker volume, bind mount, tmpfs mount** should be mounted on the container to provide persistent storage which are not managed by UnionFS.
+
+1. Docker users different storage drivers to manage this writeable layer. Read https://docs.docker.com/storage/storagedriver/ for more details of container layers, `CoW` strategy and storage drivers brief.
+
+
+#### **2. Docker volumes** ####
+1. Docker volumes are the preferred way to store persistent data permanently for containers.
+
+1. Volumes allow sharing data among multiple running containers.
+
+1. Can be managed directly by Docker CLI or API and easier to backup and restore.
+
+1. Indpendent of underlying host system filesystem whereby a volume creates a new directory within the Docker's storage directory on the host machine and Docker manages its contents, e.g. `/var/lib/docker/volumes/` on Linux.
+
+1. Can work on both Windows & Linux.
+
+1. Using volume drivers allow you to connect to remote cloud storage providers for hosting the data.
+
+1. The volume contents exits outside of the container and hence does not increase its size and does not disappear after containers are deleted. You can remove unused volumes using `docker volume prune`.
+
+#### **3. Bind mount** ####
+1. Limited functions compared to volumnes but still performant.
+
+1. Leverages a file or directory of the *host machine* to mount to the container. Hence it is dependent on the host machine's filefsystem having a specific structure.
+
+1. The file or directory is referenced by its full path on the host machine.
+
+1. Bind mounts are good for sharing configuration files from the host machine to containers.
+
+#### **4. tmpfs mount (only avail for Docker on Llnux)** ####
+1. As opposed to volumes and bind mounts, a tmpfs mount is temporary, and only persisted in the host memory.
+
+1. When the container stops, the tmpfs mount is removed, and files written there won’t be persisted.
+
+1. Best used for cases when you do not want the data to persist either on the host machine or within the container.
+
+1. But you cannot share files between containers and this functionality is only avail on Linux.
